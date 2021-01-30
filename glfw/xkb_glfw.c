@@ -337,7 +337,6 @@ glfw_xkb_release(_GLFWXKBData *xkb) {
         xkb_context_unref(xkb->context);
         xkb->context = NULL;
     }
-    glfw_ibus_terminate(&xkb->ibus);
 }
 
 bool
@@ -349,7 +348,6 @@ glfw_xkb_create_context(_GLFWXKBData *xkb) {
                         "Failed to initialize XKB context");
         return false;
     }
-    glfw_connect_to_ibus(&xkb->ibus);
     return true;
 }
 
@@ -551,63 +549,15 @@ format_xkb_mods(_GLFWXKBData *xkb, const char* name, xkb_mod_mask_t mods) {
 }
 
 void
-glfw_xkb_update_ime_state(_GLFWwindow *w, _GLFWXKBData *xkb, int which, int a, int b, int c, int d) {
-    int x = 0, y = 0;
-    switch(which) {
-        case 1:
-            glfw_ibus_set_focused(&xkb->ibus, a ? true : false);
-            break;
-        case 2:
-            _glfwPlatformGetWindowPos(w, &x, &y);
-            x += a; y += b;
-            glfw_ibus_set_cursor_geometry(&xkb->ibus, x, y, c, d);
-            break;
-    }
-}
-
-void
-glfw_xkb_key_from_ime(_GLFWIBUSKeyEvent *ev, bool handled_by_ime, bool failed) {
-    _GLFWwindow *window = _glfwWindowForId(ev->window_id);
-    if (failed && window && window->callbacks.keyboard) {
-        // notify application to remove any existing pre-edit text
-        GLFWkeyevent fake_ev = {.action = GLFW_PRESS};
-        fake_ev.ime_state = 1;
-        window->callbacks.keyboard((GLFWwindow*) window, &fake_ev);
-    }
-    static xkb_keycode_t last_handled_press_keycode = 0;
-    // We filter out release events that correspond to the last press event
-    // handled by the IME system. This won't fix the case of multiple key
-    // presses before a release, but is better than nothing. For that case
-    // you'd need to implement a ring buffer to store pending key presses.
-    xkb_keycode_t prev_handled_press = last_handled_press_keycode;
-    last_handled_press_keycode = 0;
-    bool is_release = ev->glfw_ev.action == GLFW_RELEASE;
-    debug("From IBUS: native_key: 0x%x name: %s is_release: %d\n", ev->glfw_ev.native_key, glfw_xkb_keysym_name(ev->glfw_ev.key), is_release);
-    if (window && !handled_by_ime && !(is_release && ev->glfw_ev.native_key == (int) prev_handled_press)) {
-        debug("↳ to application: glfw_keycode: 0x%x (%s) keysym: 0x%x (%s) action: %s %s text: %s\n",
-            ev->glfw_ev.native_key, _glfwGetKeyName(ev->glfw_ev.native_key), ev->glfw_ev.key, glfw_xkb_keysym_name(ev->glfw_ev.key),
-            (ev->glfw_ev.action == GLFW_RELEASE ? "RELEASE" : (ev->glfw_ev.action == GLFW_PRESS ? "PRESS" : "REPEAT")),
-            format_mods(ev->glfw_ev.mods), ev->glfw_ev.text
-        );
-
-        ev->glfw_ev.ime_state = 0;
-        _glfwInputKeyboard(window, &ev->glfw_ev);
-    } else debug("↳ discarded\n");
-    if (!is_release && handled_by_ime)
-      last_handled_press_keycode = ev->glfw_ev.native_key;
-}
-
-void
 glfw_xkb_handle_key_event(_GLFWwindow *window, _GLFWXKBData *xkb, xkb_keycode_t xkb_keycode, int action) {
     static char key_text[64] = {0};
     const xkb_keysym_t *syms, *clean_syms, *default_syms;
     xkb_keysym_t xkb_sym, shifted_xkb_sym = XKB_KEY_NoSymbol, alternate_xkb_sym = XKB_KEY_NoSymbol;
-    xkb_keycode_t code_for_sym = xkb_keycode, ibus_keycode = xkb_keycode;
+    xkb_keycode_t code_for_sym = xkb_keycode;
     GLFWkeyevent glfw_ev = {.action = GLFW_PRESS};
 #ifdef _GLFW_WAYLAND
     code_for_sym += 8;
 #else
-    ibus_keycode -= 8;
 #endif
     debug("%s xkb_keycode: 0x%x ", action == GLFW_RELEASE ? "Release" : "Press", xkb_keycode);
     XKBStateGroup *sg = &xkb->states;
@@ -691,14 +641,5 @@ glfw_xkb_handle_key_event(_GLFWwindow *window, _GLFWXKBData *xkb, xkb_keycode_t 
     glfw_ev.key = glfw_sym;
     glfw_ev.mods = sg->modifiers;
     glfw_ev.text = key_text;
-    _GLFWIBUSKeyEvent ibus_ev;
-    ibus_ev.glfw_ev = glfw_ev;
-    ibus_ev.ibus_keycode = ibus_keycode;
-    ibus_ev.window_id = window->id;
-    ibus_ev.ibus_keysym = syms[0];
-    if (ibus_process_key(&ibus_ev, &xkb->ibus)) {
-        debug("↳ to IBUS: keycode: 0x%x keysym: 0x%x (%s) %s\n", ibus_ev.ibus_keycode, ibus_ev.ibus_keysym, glfw_xkb_keysym_name(ibus_ev.ibus_keysym), format_mods(ibus_ev.glfw_ev.mods));
-    } else {
-        _glfwInputKeyboard(window, &glfw_ev);
-    }
+    _glfwInputKeyboard(window, &glfw_ev);
 }

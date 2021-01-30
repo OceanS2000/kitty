@@ -32,8 +32,6 @@
 #include <xkbcommon/xkbcommon-x11.h>
 #endif
 
-#include "ibus_glfw.h"
-
 typedef struct {
     struct xkb_state*       state;
     struct xkb_state*       clean_state;
@@ -63,7 +61,6 @@ typedef struct {
     xkb_mod_mask_t          capsLockMask;
     xkb_mod_mask_t          numLockMask;
     xkb_mod_index_t         unknownModifiers[256];
-    _GLFWIBUSData           ibus;
 
 #ifdef _GLFW_X11
     int32_t                 keyboard_device_id;
@@ -92,5 +89,3 @@ const char* glfw_xkb_keysym_name(xkb_keysym_t sym);
 xkb_keysym_t glfw_xkb_sym_for_key(uint32_t key);
 void glfw_xkb_handle_key_event(_GLFWwindow *window, _GLFWXKBData *xkb, xkb_keycode_t keycode, int action);
 int glfw_xkb_keysym_from_name(const char *name, bool case_sensitive);
-void glfw_xkb_update_ime_state(_GLFWwindow *w, _GLFWXKBData *xkb, int which, int a, int b, int c, int d);
-void glfw_xkb_key_from_ime(_GLFWIBUSKeyEvent *ev, bool handled_by_ime, bool failed);

@@ -79,15 +79,6 @@ active_window(void) {
     return NULL;
 }
 
-static inline void
-update_ime_position(OSWindow *os_window, Window* w, Screen *screen) {
-    unsigned int cell_width = os_window->fonts_data->cell_width, cell_height = os_window->fonts_data->cell_height;
-    unsigned int left = w->geometry.left, top = w->geometry.top;
-    left += screen->cursor->x * cell_width;
-    top += screen->cursor->y * cell_height;
-    glfwUpdateIMEState(global_state.callback_os_window->handle, 2, left, top, cell_width, cell_height);
-}
-
 void
 on_key_input(GLFWkeyevent *ev) {
     Window *w = active_window();
@@ -104,7 +95,6 @@ on_key_input(GLFWkeyevent *ev) {
     Screen *screen = w->render_data.screen;
     switch(ev->ime_state) {
         case 1:  // update pre-edit text
-            update_ime_position(global_state.callback_os_window, w, screen);
             screen_draw_overlay_text(screen, text);
             debug("updated pre-edit text: '%s'\n", text);
             return;

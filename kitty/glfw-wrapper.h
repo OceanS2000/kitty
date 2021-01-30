@@ -1919,10 +1919,6 @@ typedef GLFWkeyboardfun (*glfwSetKeyboardCallback_func)(GLFWwindow*, GLFWkeyboar
 GFW_EXTERN glfwSetKeyboardCallback_func glfwSetKeyboardCallback_impl;
 #define glfwSetKeyboardCallback glfwSetKeyboardCallback_impl
 
-typedef void (*glfwUpdateIMEState_func)(GLFWwindow*, int, int, int, int, int);
-GFW_EXTERN glfwUpdateIMEState_func glfwUpdateIMEState_impl;
-#define glfwUpdateIMEState glfwUpdateIMEState_impl
-
 typedef GLFWmousebuttonfun (*glfwSetMouseButtonCallback_func)(GLFWwindow*, GLFWmousebuttonfun);
 GFW_EXTERN glfwSetMouseButtonCallback_func glfwSetMouseButtonCallback_impl;
 #define glfwSetMouseButtonCallback glfwSetMouseButtonCallback_impl
@@ -2106,13 +2102,5 @@ GFW_EXTERN glfwGetNativeKeyForName_func glfwGetNativeKeyForName_impl;
 typedef void (*glfwRequestWaylandFrameEvent_func)(GLFWwindow*, unsigned long long, GLFWwaylandframecallbackfunc);
 GFW_EXTERN glfwRequestWaylandFrameEvent_func glfwRequestWaylandFrameEvent_impl;
 #define glfwRequestWaylandFrameEvent glfwRequestWaylandFrameEvent_impl
-
-typedef unsigned long long (*glfwDBusUserNotify_func)(const char*, const char*, const char*, const char*, const char*, int32_t, GLFWDBusnotificationcreatedfun, void*);
-GFW_EXTERN glfwDBusUserNotify_func glfwDBusUserNotify_impl;
-#define glfwDBusUserNotify glfwDBusUserNotify_impl
-
-typedef void (*glfwDBusSetUserNotificationHandler_func)(GLFWDBusnotificationactivatedfun);
-GFW_EXTERN glfwDBusSetUserNotificationHandler_func glfwDBusSetUserNotificationHandler_impl;
-#define glfwDBusSetUserNotificationHandler glfwDBusSetUserNotificationHandler_impl
 
 const char* load_glfw(const char* path);

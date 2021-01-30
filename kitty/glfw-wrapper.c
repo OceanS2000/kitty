@@ -285,9 +285,6 @@ load_glfw(const char* path) {
     *(void **) (&glfwSetKeyboardCallback_impl) = dlsym(handle, "glfwSetKeyboardCallback");
     if (glfwSetKeyboardCallback_impl == NULL) fail("Failed to load glfw function glfwSetKeyboardCallback with error: %s", dlerror());
 
-    *(void **) (&glfwUpdateIMEState_impl) = dlsym(handle, "glfwUpdateIMEState");
-    if (glfwUpdateIMEState_impl == NULL) fail("Failed to load glfw function glfwUpdateIMEState with error: %s", dlerror());
-
     *(void **) (&glfwSetMouseButtonCallback_impl) = dlsym(handle, "glfwSetMouseButtonCallback");
     if (glfwSetMouseButtonCallback_impl == NULL) fail("Failed to load glfw function glfwSetMouseButtonCallback with error: %s", dlerror());
 
@@ -409,10 +406,6 @@ load_glfw(const char* path) {
     *(void **) (&glfwGetNativeKeyForName_impl) = dlsym(handle, "glfwGetNativeKeyForName");
 
     *(void **) (&glfwRequestWaylandFrameEvent_impl) = dlsym(handle, "glfwRequestWaylandFrameEvent");
-
-    *(void **) (&glfwDBusUserNotify_impl) = dlsym(handle, "glfwDBusUserNotify");
-
-    *(void **) (&glfwDBusSetUserNotificationHandler_impl) = dlsym(handle, "glfwDBusSetUserNotificationHandler");
 
     return NULL;
 }

@@ -83,7 +83,7 @@ def init_env(env: Env, pkg_config: Callable, pkg_version: Callable, at_least_ver
             ans.cflags.append('-DXKB_HAS_NO_UTF32')
 
     if module == 'x11':
-        for dep in 'x11 xrandr xinerama xcursor xkbcommon xkbcommon-x11 x11-xcb dbus-1'.split():
+        for dep in 'x11 xrandr xinerama xcursor xkbcommon xkbcommon-x11 x11-xcb'.split():
             ans.cflags.extend(pkg_config(dep, '--cflags-only-I'))
             ans.ldpaths.extend(pkg_config(dep, '--libs'))
 
@@ -218,9 +218,6 @@ def generate_wrappers(glfw_header: str) -> None:
     const char* glfwGetPrimarySelectionString(GLFWwindow* window, void)
     int glfwGetNativeKeyForName(const char* key_name, int case_sensitive)
     void glfwRequestWaylandFrameEvent(GLFWwindow *handle, unsigned long long id, GLFWwaylandframecallbackfunc callback)
-    unsigned long long glfwDBusUserNotify(const char *app_name, const char* icon, const char *summary, const char *body, \
-const char *action_text, int32_t timeout, GLFWDBusnotificationcreatedfun callback, void *data)
-    void glfwDBusSetUserNotificationHandler(GLFWDBusnotificationactivatedfun handler)
 '''.splitlines():
         if line:
             functions.append(Function(line.strip(), check_fail=False))

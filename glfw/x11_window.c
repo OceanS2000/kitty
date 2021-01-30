@@ -30,7 +30,6 @@
 #define _GNU_SOURCE
 #include "internal.h"
 #include "backend_utils.h"
-#include "linux_notify.h"
 #include "../kitty/monotonic.h"
 
 #include <X11/cursorfont.h>
@@ -75,8 +74,6 @@ handleEvents(monotonic_t timeout) {
         (void)dispatched;
         EVDBG("dispatched %u X11 events", dispatched);
     }
-    glfw_ibus_dispatch(&_glfw.x11.xkb.ibus);
-    glfw_dbus_session_bus_dispatch();
     EVDBG("other dispatch done");
     if (_glfw.x11.eventLoopData.wakeup_fd_ready) check_for_wakeup_events(&_glfw.x11.eventLoopData);
 }
@@ -3084,11 +3081,6 @@ VkResult _glfwPlatformCreateWindowSurface(VkInstance instance,
     }
 }
 
-void
-_glfwPlatformUpdateIMEState(_GLFWwindow *w, int which, int a, int b, int c, int d) {
-    glfw_xkb_update_ime_state(w, &_glfw.x11.xkb, which, a, b, c, d);
-}
-
 //////////////////////////////////////////////////////////////////////////
 //////                        GLFW native API                       //////
 //////////////////////////////////////////////////////////////////////////
@@ -3108,12 +3100,4 @@ GLFWAPI Window glfwGetX11Window(GLFWwindow* handle)
 
 GLFWAPI int glfwGetNativeKeyForName(const char* keyName, bool caseSensitive) {
     return glfw_xkb_keysym_from_name(keyName, caseSensitive);
-}
-
-GLFWAPI unsigned long long glfwDBusUserNotify(const char *app_name, const char* icon, const char *summary, const char *body, const char *action_name, int32_t timeout, GLFWDBusnotificationcreatedfun callback, void *data) {
-    return glfw_dbus_send_user_notification(app_name, icon, summary, body, action_name, timeout, callback, data);
-}
-
-GLFWAPI void glfwDBusSetUserNotificationHandler(GLFWDBusnotificationactivatedfun handler) {
-    glfw_dbus_set_user_notification_activated_handler(handler);
 }

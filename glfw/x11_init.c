@@ -637,7 +637,6 @@ int _glfwPlatformInit(void)
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "X11: Failed to initialize event loop data");
     }
-    glfw_dbus_init(&_glfw.x11.dbus, &_glfw.x11.eventLoopData);
 
     _glfw.x11.screen = DefaultScreen(_glfw.x11.display);
     _glfw.x11.root = RootWindow(_glfw.x11.display, _glfw.x11.screen);
@@ -679,7 +678,6 @@ void _glfwPlatformTerminate(void)
     }
 
     glfw_xkb_release(&_glfw.x11.xkb);
-    glfw_dbus_terminate(&_glfw.x11.dbus);
     free(_glfw.x11.primarySelectionString);
     free(_glfw.x11.clipboardString);
 

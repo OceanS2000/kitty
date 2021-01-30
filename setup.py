@@ -676,7 +676,7 @@ def find_c_files() -> Tuple[List[str], List[str]]:
 
 
 def compile_glfw(compilation_database: CompilationDatabase) -> None:
-    modules = 'cocoa' if is_macos else 'x11 wayland'
+    modules = 'cocoa' if is_macos else 'x11'
     for module in modules.split():
         try:
             genv = glfw.init_env(env, pkg_config, pkg_version, at_least_version, test_compile, module)

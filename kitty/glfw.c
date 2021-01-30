@@ -333,7 +333,6 @@ window_focus_callback(GLFWwindow *w, int focused) {
     global_state.callback_os_window->cursor_blink_zero_time = now;
     if (is_window_ready_for_callbacks()) {
         WINDOW_CALLBACK(on_focus, "O", focused ? Py_True : Py_False);
-        glfwUpdateIMEState(global_state.callback_os_window->handle, 1, focused, 0, 0, 0);
     }
     request_tick_callback();
     global_state.callback_os_window = NULL;
@@ -807,11 +806,6 @@ error_callback(int error, const char* description) {
 
 
 #ifndef __APPLE__
-static void
-dbus_user_notification_activated(uint32_t notification_id, const char* action) {
-    unsigned long nid = notification_id;
-    call_boss(dbus_notification_callback, "Oks", Py_True, nid, action);
-}
 #endif
 
 static PyObject*
@@ -828,9 +822,6 @@ glfw_init(PyObject UNUSED *self, PyObject *args) {
     glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, 0);
     glfwInitHint(GLFW_COCOA_MENUBAR, 0);
 #else
-    if (glfwDBusSetUserNotificationHandler) {
-        glfwDBusSetUserNotificationHandler(dbus_user_notification_activated);
-    }
 #endif
     PyObject *ans = glfwInit(monotonic_start_time) ? Py_True: Py_False;
     if (ans == Py_True) {
@@ -1287,25 +1278,6 @@ request_frame_render(OSWindow *w) {
         w->render_state = RENDER_FRAME_REQUESTED;
     }
 }
-
-void
-dbus_notification_created_callback(unsigned long long notification_id, uint32_t new_notification_id, void* data UNUSED) {
-    unsigned long new_id = new_notification_id;
-    call_boss(dbus_notification_callback, "OKk", Py_False, notification_id, new_id);
-}
-
-static PyObject*
-dbus_send_notification(PyObject *self UNUSED, PyObject *args) {
-    char *app_name, *icon, *summary, *body, *action_name;
-    int timeout = -1;
-    if (!PyArg_ParseTuple(args, "sssss|i", &app_name, &icon, &summary, &body, &action_name, &timeout)) return NULL;
-    if (!glfwDBusUserNotify) {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to load glfwDBusUserNotify, did you call glfw_init?");
-        return NULL;
-    }
-    unsigned long long notification_id = glfwDBusUserNotify(app_name, icon, summary, body, action_name, timeout, dbus_notification_created_callback, NULL);
-    return PyLong_FromUnsignedLongLong(notification_id);
-}
 #endif
 
 id_type
@@ -1358,7 +1330,6 @@ static PyMethodDef module_methods[] = {
     METHODB(x11_window_id, METH_O),
     METHODB(set_primary_selection, METH_VARARGS),
 #ifndef __APPLE__
-    METHODB(dbus_send_notification, METH_VARARGS),
 #endif
     METHODB(cocoa_window_id, METH_O),
     {"glfw_init", (PyCFunction)glfw_init, METH_VARARGS, ""},
